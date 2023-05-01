@@ -1,6 +1,6 @@
 # Ebook-Translator: 
 ![eBook-GPT-Translator Logo](./logo.png)
-Ebook-Translator 是一个基于人工智能提示的原生工程项目。换句话说，这个项目绝大部分是由我提问，而GPT负责执开发的。
+Ebook-Translator 是一个原生基于人工智能提示的工程项目。换句话说，这个项目绝大部分是由我提问，而GPT负责执开发的。
 
 ## 特点
 
@@ -13,12 +13,13 @@ Ebook-Translator 是一个基于人工智能提示的原生工程项目。换句
 
 ## 使用方法
 ```bash
-git clone 
+git clone https://github.com/ac1982/eBook-translator.git
+cd eBook-translator
 pip install -r requrements.txt
 mv config_example.json config.json
 ```
 把你自己的OpenAI-API-Key，通常是```sk-```开头的一串字符，填写到```config.json```里面的```openai_api_key```。
 
 ```bash
-python3 translator.py your_ebook.epub
+python translator.py your_ebook.epub
 ```
