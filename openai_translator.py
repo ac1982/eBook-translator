@@ -6,7 +6,7 @@ from openai.error import APIConnectionError
 
 # 使用 tenacity 重试装饰器
 @retry(
-    wait=wait_exponential(multiplier=1, max=60),
+    wait=wait_exponential(multiplier=1, max=180),
     stop=stop_after_attempt(10),
     retry=retry_if_exception_type((openai.error.RateLimitError, SSLError, APIConnectionError)),
 )
