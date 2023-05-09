@@ -28,5 +28,5 @@ mv config_example.json config.json
 把你自己的OpenAI-API-Key，通常是```sk-```开头的一串字符，填写到```config.json```里面的```openai_api_key```。
 Fill in your OpenAI API key, which usually starts with ```sk-```, into the ```openai_api_key``` field inside the ```config.json``` file.
 ```bash
-python translator.py your_ebook.epub
+python translator.py your_ebook.epub //如果你在config.json里的test设置为true，那么仅翻译开篇的7篇（含发行说明等）
 ```
