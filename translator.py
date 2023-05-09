@@ -46,7 +46,7 @@ def translate_helper(soup, level=1):
         i += 1
         child_html = str(child)
 
-        # 如果子节点是空字符，那么直接略过
+        # 如果子节点是空字符，那么直接略过。但是也会导致文本的换行符丢失，比如\n & \r
         # if child_html.strip() == "":
         #     if config['test']:
         #         print(f"该level {level} 第{i} 子节点 空字符")
