@@ -38,6 +38,7 @@ def translate_helper(soup, level=1):
     buffer = ''
     buffer_tokens = 0
 
+    # 避免错误导致的无限递归
     if level == 5:
         sys.exit(1)
 
