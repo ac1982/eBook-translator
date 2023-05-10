@@ -2,5 +2,6 @@
   "openai_api_key": "sk-your-key-here",
   "model": "gpt-3.5-turbo",
   "system": "Act as e-book translator to Simplified Chinese. Preserve the original language for elements such as programming code, computer commands, variable/function/class names, proper nouns, file names and paths, URLs, email addresses, mathematical formulas and symbols, abbreviations, copyright information, and country-specific measurements, currency, code for end-of-line, and date formats.",
+  "max_workers": null,
   "test": false
 }

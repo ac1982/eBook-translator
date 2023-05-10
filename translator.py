@@ -5,8 +5,9 @@ import tiktoken
 import json
 import argparse
 from openai_translator import translate_content
-from tqdm import tqdm
 import sys
+import os
+import concurrent
 
 # 加载配置文件
 with open("config.json", "r") as f:
@@ -25,6 +26,11 @@ else:
 ENCODING_NAME = "cl100k_base"
 THRESHOLD = MAX_TOKENS/2
 total_tokens = 0
+max_workers = config.get('max_workers', None)
+
+if max_workers is None:
+    max_workers = os.cpu_count()
+
 
 def num_tokens_from_string(string: str) -> int:
     """Returns the number of tokens in a text string."""
@@ -34,7 +40,6 @@ def num_tokens_from_string(string: str) -> int:
 
 # 使用递归的方法翻译超过MAX_TOKENS的内容
 def translate_recursive(soup, level=1):
-    global total_tokens  # 使用全局变量 total_tokens 跟踪已翻译的 tokens 数量
     # 检查 soup 是否为空
     if not soup:
         # 如果为空,返回空字符串和0
@@ -49,7 +54,6 @@ def translate_recursive(soup, level=1):
     cost_tokens = 0  # 初始化已用 tokens 数量
     buffer = ''  # 初始化缓冲区字符串
     buffer_tokens = 0  # 初始化缓冲区 tokens 数量
-    num_children_in_buffer = 0  # 初始化缓冲区内子节点的数量
 
     # 避免错误导致的无限递归
     if level == 5:
@@ -126,8 +130,9 @@ def translate_recursive(soup, level=1):
 
 # item 是 ebooklib book.get_items()的子内容，通常是html字符串
 def translate_item(content):
-    global total_tokens  # 使用全局变量 total_tokens 来跟踪已翻译的 tokens 数量
+    # global total_tokens  # 使用全局变量 total_tokens 来跟踪已翻译的 tokens 数量
     count = num_tokens_from_string(content)  # 计算输入内容的 tokens 数量
+    item_cost_tokens=0
     if config['test']:
         print(f"该 ITEM 的tokens合计：{count}")
 
@@ -136,29 +141,29 @@ def translate_item(content):
         if config['test']:
             print("Translating the entire content.\n")
         new_item_content, cost_tokens = translate_content(content)  # 直接翻译整个内容
-        total_tokens += cost_tokens  # 累加已用 tokens 数量
+        item_cost_tokens += cost_tokens  # 累加已用 tokens 数量
     else:
         # 如果输入内容的 tokens 数量大于 MAX_TOKENS，需要逐部分翻译
         if config['test']:
             print("Translating the content by parts.\n")
         soup = BeautifulSoup(content, 'html.parser')  # 使用 BeautifulSoup 解析 HTML 内容
         translated_body, cost_tokens = translate_recursive(soup.body)  # 递归地翻译子元素
-        total_tokens += cost_tokens  # 累加已用 tokens 数量
+        item_cost_tokens += cost_tokens  # 累加已用 tokens 数量
         # 将翻译后的 body 内容替换原始 soup 对象中的 body 内容
         soup.body.clear()  # 清空原始 soup 对象中的 body 内容
         soup.body.append(BeautifulSoup(translated_body, 'html.parser'))  # 将翻译后的内容添加到 soup 的 body 中
         new_item_content = str(soup)  # 获取整个 HTML 字符串（包括翻译后的内容）
 
-    return new_item_content  # 返回翻译后的内容
+    return new_item_content, item_cost_tokens  # 返回翻译后的内容
 
 
 if __name__ == '__main__':
-    # Set up command line argument parsing
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
+    
     parser = argparse.ArgumentParser(description='Translate an EPUB file.')
     parser.add_argument('input_file', type=str,
                         help='The path to the input EPUB file.')
 
-    # Parse the command line arguments
     args = parser.parse_args()
     try:
         book = epub.read_epub(args.input_file)
@@ -182,32 +187,46 @@ if __name__ == '__main__':
                 'OPF', entry[1]['name'], entry[1]['content'], others=entry[1])
 
     item_count = 0
-    # Convert items to a list and get the total count
     items = list(book.get_items())
     total_items = len(items)
-    for item in tqdm(items, total=total_items, desc="Processing items", unit="item"):
+    
+    item_results = {}
+    item_futures = []
+    total_tokens = 0
+
+    for index, item in enumerate(items):
         if item.get_type() == ebooklib.ITEM_DOCUMENT:
             item_count += 1
             if config['test'] and item_count > 7:
                 break
 
             original_content = item.get_content().decode('utf-8')
-            new_content = translate_item(original_content)
+            future = executor.submit(translate_item, original_content)
+            item_futures.append((index, item, future))
+
+    for index, item, future in item_futures:
+        new_content, item_cost_tokens = future.result()
+        total_tokens += item_cost_tokens
+        item_results[index] = (new_content, item_cost_tokens)
+
+    for index, item in enumerate(items):
+        if index in item_results:
+            new_content, _ = item_results[index]
             new_item = epub.EpubItem(uid=item.id, file_name=item.file_name,
                                      media_type=item.media_type, content=new_content)
             new_book.add_item(new_item)
+            # Update TOC
+            for toc_entry in new_book.toc:
+                if toc_entry.href == item.file_name:
+                    toc_entry.item = new_item
         else:
-            # Add the item directly to
-            # Add the item directly to the new book object
             new_book.add_item(item)
 
-    # Copy the chapter structure, table of contents, and guide
     new_book.toc = book.toc
     new_book.spine = book.spine
     new_book.guide = book.guide
 
-    # Save the new book to a new EPUB file
     output_file = args.input_file.split('.')[0] + '_zh.epub'
     epub.write_epub(output_file, new_book)
     usd_dollar = (total_tokens/1000)*0.002
-    print(f"Cost tokens: {total_tokens}, may be ${usd_dollar} ")
+    print(f"Cost tokens: {usd_dollar:.2f} USD")
