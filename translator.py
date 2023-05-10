@@ -197,7 +197,7 @@ if __name__ == '__main__':
     for index, item in enumerate(items):
         if item.get_type() == ebooklib.ITEM_DOCUMENT:
             item_count += 1
-            if config['test'] and item_count > 7:
+            if config['test'] and item_count > max(1, total_items // 10):
                 break
 
             original_content = item.get_content().decode('utf-8')
