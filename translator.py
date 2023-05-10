@@ -53,6 +53,7 @@ def translate_recursive(soup, level=1):
 
     # 避免错误导致的无限递归
     if level == 5:
+        print(f"递归层数超过{level}层，停止程序。")
         sys.exit(1)
 
     for i,child in enumerate(children):  # 遍历子节点
