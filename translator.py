@@ -8,11 +8,23 @@ from openai_translator import translate_content
 from tqdm import tqdm
 import sys
 
-MAX_TOKENS = 1200
+# 加载配置文件
+with open("config.json", "r") as f:
+    config = json.load(f)
+
+# 根据配置文件中的模型名称设置 MAX_TOKENS
+model_name = config['model']
+if model_name == "gpt-4":
+    MAX_TOKENS = 2400
+elif model_name == "gpt-3.5-turbo":
+    MAX_TOKENS = 1200
+else:
+    print(f"未知模型: {model_name}")
+    sys.exit(1)
+
 ENCODING_NAME = "cl100k_base"
 THRESHOLD = MAX_TOKENS/2
 total_tokens = 0
-
 
 def num_tokens_from_string(string: str) -> int:
     """Returns the number of tokens in a text string."""
@@ -154,9 +166,6 @@ if __name__ == '__main__':
         sys.exit(1)
 
     new_book = epub.EpubBook()
-
-    with open('config.json', 'r') as f:
-        config = json.load(f)
 
     dc_keys = ['identifier', 'title', 'language', 'creator', 'contributor',
                'publisher', 'rights', 'coverage', 'date', 'description']
