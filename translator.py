@@ -20,39 +20,35 @@ def num_tokens_from_string(string: str) -> int:
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
-
-def translate_helper(soup, level=1):
-    global total_tokens
-
+# 使用递归的方法翻译超过MAX_TOKENS的内容
+def translate_recursive(soup, level=1):
+    global total_tokens  # 使用全局变量 total_tokens 跟踪已翻译的 tokens 数量
+    # 检查 soup 是否为空
     if not soup:
+        # 如果为空,返回空字符串和0
         return '', 0
 
-    children = list(soup.children)
-    children_number = len(children)
+    children = list(soup.children)  # 获取 soup 的子节点列表
+    children_number = len(children)  # 计算子节点的数量
     if config['test']:
-        print(f"Level {level} 的chilren 数量{children_number}")
+        print(f"Level {level} 的子节点(Children)数量{children_number}")
 
-    i = 0
-    translated_content = ''
-    cost_tokens = 0
-    buffer = ''
-    buffer_tokens = 0
+    child_index = 0
+    translated_content = ''  # 初始化翻译后的内容字符串
+    cost_tokens = 0  # 初始化已用 tokens 数量
+    buffer = ''  # 初始化缓冲区字符串
+    buffer_tokens = 0  # 初始化缓冲区 tokens 数量
+    num_children_in_buffer = 0  # 初始化缓冲区内子节点的数量
 
     # 避免错误导致的无限递归
     if level == 5:
         sys.exit(1)
 
-    for child in children:
+    for child in children:  # 遍历子节点
         i += 1
-        child_html = str(child)
+        child_html = str(child)  # 将子节点转换为 HTML 字符串
 
-        # 如果子节点是空字符，那么直接略过。但是也会导致文本的换行符丢失，比如\n & \r
-        # if child_html.strip() == "":
-        #     if config['test']:
-        #         print(f"该level {level} 第{i} 子节点 空字符")
-        #     continue
-
-        child_tokens = num_tokens_from_string(child_html)
+        child_tokens = num_tokens_from_string(child_html)  # 计算子节点的 tokens 数量
 
         if child_tokens < MAX_TOKENS:
             # 如果子节点的 token 数量大于 THRESHOLD，先清空缓冲区，然后直接处理 child_html
@@ -106,7 +102,7 @@ def translate_helper(soup, level=1):
                 buffer_tokens = 0
 
             # 递归处理子节点
-            translated_child, child_cost_tokens = translate_helper(
+            translated_child, child_cost_tokens = translate_recursive(
                 child, level + 1)
             translated_content += translated_child
             cost_tokens += child_cost_tokens
@@ -119,33 +115,35 @@ def translate_helper(soup, level=1):
         translated_content += translated_buffer
         cost_tokens += buffer_cost_tokens
 
-    return translated_content, cost_tokens
+    return translated_content, cost_tokens  # 返回翻译后的内容和已用 tokens 数量
 
 
-def translate(content):
-    global total_tokens
-    count = num_tokens_from_string(content)  # 计算输入内容的 token 数量
+
+# item 是 ebooklib book.get_items()的子内容，通常是html字符串
+def translate_item(content):
+    global total_tokens  # 使用全局变量 total_tokens 来跟踪已翻译的 tokens 数量
+    count = num_tokens_from_string(content)  # 计算输入内容的 tokens 数量
     if config['test']:
-        print(f"该item本地计算的tokens合计：{count}")
+        print(f"该 ITEM 的tokens合计：{count}")
 
-    # 如果输入内容的 token 数量小于 MAX_TOKENS
+    # 如果输入内容的 tokens 数量小于 MAX_TOKENS
     if count < MAX_TOKENS:
         if config['test']:
             print("Translating the entire content...")
         new_content, cost_tokens = translate_content(content)  # 直接翻译整个内容
-        total_tokens += cost_tokens  # 累加已用 token 数量
-    else:  # 如果输入内容的 token 数量大于 MAX_TOKENS
+        total_tokens += cost_tokens  # 累加已用 tokens 数量
+    else:
+        # 如果输入内容的 tokens 数量大于 MAX_TOKENS，需要逐部分翻译
         if config['test']:
             print("Translating the content by parts...")
-        # 使用 BeautifulSoup 解析 HTML 内容
-        soup = BeautifulSoup(content, 'html.parser')
-        translated_body, cost_tokens = translate_helper(soup.body)  # 递归地翻译子元素
-        total_tokens += cost_tokens
+        soup = BeautifulSoup(content, 'html.parser')  # 使用 BeautifulSoup 解析 HTML 内容
+        translated_body, cost_tokens = translate_recursive(soup.body)  # 递归地翻译子元素
+        total_tokens += cost_tokens  # 累加已用 tokens 数量
 
         # 将翻译后的 body 内容替换原始 soup 对象中的 body 内容
-        soup.body.clear()
-        soup.body.append(BeautifulSoup(translated_body, 'html.parser'))
-        new_content = str(soup)  # 获取整个 HTML 字符串
+        soup.body.clear()  # 清空原始 soup 对象中的 body 内容
+        soup.body.append(BeautifulSoup(translated_body, 'html.parser'))  # 将翻译后的内容添加到 soup 的 body 中
+        new_content = str(soup)  # 获取整个 HTML 字符串（包括翻译后的内容）
 
     return new_content  # 返回翻译后的内容
 
@@ -193,7 +191,7 @@ if __name__ == '__main__':
                 break
 
             original_content = item.get_content().decode('utf-8')
-            new_content = translate(original_content)
+            new_content = translate_item(original_content)
             new_item = epub.EpubItem(uid=item.id, file_name=item.file_name,
                                      media_type=item.media_type, content=new_content)
             new_book.add_item(new_item)
