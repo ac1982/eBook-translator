@@ -1,3 +1,3 @@
 config.json
 *.epub
-./__pycache__
+__pycache__/*
