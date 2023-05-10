@@ -76,7 +76,7 @@ def translate_recursive(soup, level=1):
                 if buffer_tokens >= THRESHOLD:
                     if config['test']:
                         print(
-                            f"该Level:{level} 第{i+1} 子节点,把其添加到的buffer后，Tokens超过Threshold。\n tokens：{buffer_tokens} \n翻译组合内容: \n{buffer}\n")
+                            f"该Level:{level} 第{i+1} 子节点,把其添加到的buffer后，Tokens超过Threshold。\nTokens：{buffer_tokens} \n翻译组合内容: \n{buffer}\n")
                     translated_buffer, buffer_cost_tokens = translate_content(buffer)
                     translated_content += translated_buffer
                     cost_tokens += buffer_cost_tokens
