@@ -2,13 +2,13 @@ import openai
 import json
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 from requests.exceptions import SSLError
-from openai.error import APIConnectionError
+from openai.error import RateLimitError, APIConnectionError, APIError
 
 # 使用 tenacity 重试装饰器
 @retry(
     wait=wait_exponential(multiplier=1, max=180),
     stop=stop_after_attempt(10),
-    retry=retry_if_exception_type((openai.error.RateLimitError, SSLError, APIConnectionError)),
+    retry=retry_if_exception_type((RateLimitError, APIConnectionError, APIError, SSLError)),
 )
 def completion_with_backoff(**kwargs):
     return openai.ChatCompletion.create(**kwargs)
