@@ -28,5 +28,13 @@ mv config_example.json config.json
 把你自己的OpenAI-API-Key，通常是```sk-```开头的一串字符，填写到```config.json```里面的```openai_api_key```。
 Fill in your OpenAI API key, which usually starts with ```sk-```, into the ```openai_api_key``` field inside the ```config.json``` file.
 ```bash
-python translator.py your_ebook.epub //如果你在config.json里的test设置为true，那么仅翻译开篇的7篇（含发行说明等）
+python translator.py your_ebook.epub
+```
+我们进一步说明下```config.json```各个参数的意思
+```
+"openai_api_key": "sk-your-key-here",// 填写你的OpenAI API Key
+"model": "gpt-3.5-turbo", //支持gpt-4 或 gpt-3.5-turbo
+"system": "GPT Chat 的最高级提示词放在这里，如果你不知道它做什么的，保留默认值",
+"max_workers": null, //本项目支持多进程，所以可以并发来提高效率并且保留顺序，默认值是当前机器的CPU核心数
+"test": false //如果设置成true，只是处理7个epub的items，可以理解为包括目录、发行说明、封面在内的7章
 ```
