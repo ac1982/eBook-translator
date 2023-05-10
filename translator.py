@@ -126,26 +126,25 @@ def translate_item(content):
     if config['test']:
         print(f"该 ITEM 的tokens合计：{count}")
 
-    # 如果输入内容的 tokens 数量小于 MAX_TOKENS
     if count < MAX_TOKENS:
+        # 如果输入内容的 tokens 数量小于 MAX_TOKENS
         if config['test']:
-            print("Translating the entire content...")
-        new_content, cost_tokens = translate_content(content)  # 直接翻译整个内容
+            print("Translating the entire content.\n")
+        new_item_content, cost_tokens = translate_content(content)  # 直接翻译整个内容
         total_tokens += cost_tokens  # 累加已用 tokens 数量
     else:
         # 如果输入内容的 tokens 数量大于 MAX_TOKENS，需要逐部分翻译
         if config['test']:
-            print("Translating the content by parts...")
+            print("Translating the content by parts.\n")
         soup = BeautifulSoup(content, 'html.parser')  # 使用 BeautifulSoup 解析 HTML 内容
         translated_body, cost_tokens = translate_recursive(soup.body)  # 递归地翻译子元素
         total_tokens += cost_tokens  # 累加已用 tokens 数量
-
         # 将翻译后的 body 内容替换原始 soup 对象中的 body 内容
         soup.body.clear()  # 清空原始 soup 对象中的 body 内容
         soup.body.append(BeautifulSoup(translated_body, 'html.parser'))  # 将翻译后的内容添加到 soup 的 body 中
-        new_content = str(soup)  # 获取整个 HTML 字符串（包括翻译后的内容）
+        new_item_content = str(soup)  # 获取整个 HTML 字符串（包括翻译后的内容）
 
-    return new_content  # 返回翻译后的内容
+    return new_item_content  # 返回翻译后的内容
 
 
 if __name__ == '__main__':
