@@ -10,7 +10,7 @@ import sys
 
 MAX_TOKENS = 1200
 ENCODING_NAME = "cl100k_base"
-THRESHOLD = 800
+THRESHOLD = MAX_TOKENS/2
 total_tokens = 0
 
 
@@ -33,7 +33,6 @@ def translate_recursive(soup, level=1):
     if config['test']:
         print(f"Level {level} 的子节点(Children)数量{children_number}")
 
-    child_index = 0
     translated_content = ''  # 初始化翻译后的内容字符串
     cost_tokens = 0  # 初始化已用 tokens 数量
     buffer = ''  # 初始化缓冲区字符串
@@ -44,19 +43,16 @@ def translate_recursive(soup, level=1):
     if level == 5:
         sys.exit(1)
 
-    for child in children:  # 遍历子节点
-        i += 1
+    for i,child in enumerate(children):  # 遍历子节点
         child_html = str(child)  # 将子节点转换为 HTML 字符串
-
         child_tokens = num_tokens_from_string(child_html)  # 计算子节点的 tokens 数量
-
         if child_tokens < MAX_TOKENS:
             # 如果子节点的 token 数量大于 THRESHOLD，先清空缓冲区，然后直接处理 child_html
             if child_tokens >= THRESHOLD:
                 if buffer:
                     if config['test']:
                         print(
-                            f"该level {level} 第{i} 子节点是有buffer：{buffer_tokens} 翻译组合内容: {buffer}")
+                            f"处理Level:{level} 第{i+1} 子节点是有buffer。\n合计Tokens：{buffer_tokens} \n翻译组合内容: \n{buffer}\n")
                     translated_buffer, buffer_cost_tokens = translate_content(
                         buffer)
                     translated_content += translated_buffer
@@ -66,9 +62,8 @@ def translate_recursive(soup, level=1):
 
                 if config['test']:
                     print(
-                        f"该level {level} 第{i} 子节点 tokens：{child_tokens} 直接处理")
-                translated_child, child_cost_tokens = translate_content(
-                    child_html)
+                        f"该Level:{level} 第{i+1} 子节点 tokens：{child_tokens} 直接处理")
+                translated_child, child_cost_tokens = translate_content(child_html)
                 translated_content += translated_child
                 cost_tokens += child_cost_tokens
 
@@ -81,9 +76,8 @@ def translate_recursive(soup, level=1):
                 if buffer_tokens >= THRESHOLD:
                     if config['test']:
                         print(
-                            f"该level {level} 第{i} 子节点的buffer tokens：{buffer_tokens} 翻译组合内容: {buffer}")
-                    translated_buffer, buffer_cost_tokens = translate_content(
-                        buffer)
+                            f"该Level:{level} 第{i+1} 子节点,把其添加到的buffer后，Tokens超过Threshold。\n tokens：{buffer_tokens} \n翻译组合内容: \n{buffer}\n")
+                    translated_buffer, buffer_cost_tokens = translate_content(buffer)
                     translated_content += translated_buffer
                     cost_tokens += buffer_cost_tokens
                     buffer = ''
@@ -92,8 +86,7 @@ def translate_recursive(soup, level=1):
             # 先清空缓冲区
             if buffer:
                 if config['test']:
-                    print(
-                        f"该level {level} tokens：{buffer_tokens} 翻译组合内容: {buffer}")
+                    print(f"该Level:{level} 第{i+1} 子节点 大于MAX_TOKENS \n合计Tokens：{buffer_tokens} \n清空buffer后递归处理,Buffer: \n{buffer} \n")
                 translated_buffer, buffer_cost_tokens = translate_content(
                     buffer)
                 translated_content += translated_buffer
@@ -102,15 +95,14 @@ def translate_recursive(soup, level=1):
                 buffer_tokens = 0
 
             # 递归处理子节点
-            translated_child, child_cost_tokens = translate_recursive(
-                child, level + 1)
+            translated_child, child_cost_tokens = translate_recursive(child, level + 1)
             translated_content += translated_child
             cost_tokens += child_cost_tokens
 
     # 处理剩余的缓冲区内容
     if buffer:
         if config['test']:
-            print(f"该level {level} tokens：{buffer_tokens} 翻译组合内容: {buffer}")
+            print(f"遍历ITEM结束，缓冲区仍有Buffer，合计tokens：{buffer_tokens} \n翻译Buffer: \n{buffer}\n")
         translated_buffer, buffer_cost_tokens = translate_content(buffer)
         translated_content += translated_buffer
         cost_tokens += buffer_cost_tokens
