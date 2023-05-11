@@ -56,7 +56,7 @@ def translate_recursive(soup, level=1):
     buffer_tokens = 0  # 初始化缓冲区 tokens 数量
 
     # 避免错误导致的无限递归
-    if level == 5:
+    if level >= 7:
         print(f"递归层数超过{level}层，停止程序。")
         sys.exit(1)
 
