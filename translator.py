@@ -139,18 +139,15 @@ def translate_recursive(soup, level=1):
             translated_content += translated_child
             cost_tokens += child_cost_tokens
 
-    # 处理剩余的缓冲区内容
+    # 遍历结束，处理剩余的Buffer
     if buffer:
         if config['test']:
-            print(f"遍历Level:{level}结束，缓冲区仍有Buffer\n Buffer Tokens：{buffer_tokens} \n翻译Buffer:\n{buffer}\n")
+            print(f"遍历Level:{level}结束，缓冲区仍有Buffer\nBuffer Tokens：{buffer_tokens} \n翻译Buffer:\n{buffer}\n")
         translated_buffer, buffer_cost_tokens = translate_content(buffer)
         translated_content += translated_buffer
         cost_tokens += buffer_cost_tokens
-        buffer = ''
-        buffer_tokens = 0
-
+ 
     return translated_content, cost_tokens  # 返回翻译后的内容和已用 tokens 数量
-
 
 
 # item 是 ebooklib book.get_items()的子内容，通常是html字符串
