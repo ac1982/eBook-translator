@@ -198,6 +198,7 @@ if __name__ == '__main__':
         if item.get_type() == ebooklib.ITEM_DOCUMENT:
             item_count += 1
             if config['test'] and item_count > max(1, total_items // 10):
+                #测试环境只加载1/10的ITEMS
                 break
 
             original_content = item.get_content().decode('utf-8')
