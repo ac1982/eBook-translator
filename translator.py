@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import tiktoken
 import json
 import argparse
-from openai_translator import translate_content
+from openai_handler import translate_content
 import sys
 import os
 import concurrent
