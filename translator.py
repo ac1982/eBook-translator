@@ -142,7 +142,7 @@ def translate_recursive(soup, level=1):
     # 处理剩余的缓冲区内容
     if buffer:
         if config['test']:
-            print(f"遍历ITEM结束，缓冲区仍有Buffer\n Buffer Tokens：{buffer_tokens} \n翻译Buffer:\n{buffer}\n")
+            print(f"遍历Level:{level}结束，缓冲区仍有Buffer\n Buffer Tokens：{buffer_tokens} \n翻译Buffer:\n{buffer}\n")
         translated_buffer, buffer_cost_tokens = translate_content(buffer)
         translated_content += translated_buffer
         cost_tokens += buffer_cost_tokens
