@@ -69,22 +69,20 @@ def translate_recursive(soup, level=1):
                 if buffer:
                     if config['test']:
                         print(
-                            f"处理Level:{level} 第{i+1} 子节点是有buffer。\n合计Tokens：{buffer_tokens} \n翻译组合内容: \n{buffer}\n")
-                    translated_buffer, buffer_cost_tokens = translate_content(
-                        buffer)
+                            f"Level:{level} 第{i+1} 子节点 > THRESHOLD\nBuffer不为空，Buffer的Tokens：{buffer_tokens}\n翻译Buffer内容: \n{buffer}\n")
+                    translated_buffer, buffer_cost_tokens = translate_content(buffer)
                     translated_content += translated_buffer
                     cost_tokens += buffer_cost_tokens
                     buffer = ''
                     buffer_tokens = 0
 
                 if config['test']:
-                    print(
-                        f"该Level:{level} 第{i+1} 子节点 tokens：{child_tokens} 直接处理")
+                    print(f"该Level:{level} 第{i+1} 子节点 Tokens：{child_tokens} < THRESHOLD 直接处理")
                 translated_child, child_cost_tokens = translate_content(child_html)
                 translated_content += translated_child
                 cost_tokens += child_cost_tokens
 
-            # 如果子节点的 token 数量小于 THRESHOLD
+            # 如果子节点的 tokens 数量小于 THRESHOLD
             else:
                 # 将较小的子节点添加到缓冲区，并累加 buffer_tokens
                 buffer += child_html
@@ -93,7 +91,7 @@ def translate_recursive(soup, level=1):
                 if buffer_tokens >= THRESHOLD:
                     if config['test']:
                         print(
-                            f"该Level:{level} 第{i+1} 子节点,把其添加到的buffer后，Tokens超过Threshold。\nTokens：{buffer_tokens} \n翻译组合内容: \n{buffer}\n")
+                            f"该Level:{level} 第{i+1} 子节点,把其添加到的Buffer后，Tokens超过Threshold。\nTokens：{buffer_tokens} \n翻译Buffer内容: \n{buffer}\n")
                     translated_buffer, buffer_cost_tokens = translate_content(buffer)
                     translated_content += translated_buffer
                     cost_tokens += buffer_cost_tokens
@@ -103,9 +101,8 @@ def translate_recursive(soup, level=1):
             # 先清空缓冲区
             if buffer:
                 if config['test']:
-                    print(f"该Level:{level} 第{i+1} 子节点 大于MAX_TOKENS \n合计Tokens：{buffer_tokens} \n清空buffer后递归处理,Buffer: \n{buffer} \n")
-                translated_buffer, buffer_cost_tokens = translate_content(
-                    buffer)
+                    print(f"该Level:{level} 第{i+1} 子节点Tokens：{buffer_tokens} > MAX_TOKENS \n清空Buffer后递归处理,Buffer: \n{buffer}\n")
+                translated_buffer, buffer_cost_tokens = translate_content(buffer)
                 translated_content += translated_buffer
                 cost_tokens += buffer_cost_tokens
                 buffer = ''
@@ -119,10 +116,12 @@ def translate_recursive(soup, level=1):
     # 处理剩余的缓冲区内容
     if buffer:
         if config['test']:
-            print(f"遍历ITEM结束，缓冲区仍有Buffer，合计tokens：{buffer_tokens} \n翻译Buffer: \n{buffer}\n")
+            print(f"遍历ITEM结束，缓冲区仍有Buffer\n Buffer Tokens：{buffer_tokens} \n翻译Buffer:\n{buffer}\n")
         translated_buffer, buffer_cost_tokens = translate_content(buffer)
         translated_content += translated_buffer
         cost_tokens += buffer_cost_tokens
+        buffer = ''
+        buffer_tokens = 0
 
     return translated_content, cost_tokens  # 返回翻译后的内容和已用 tokens 数量
 
