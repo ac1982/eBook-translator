@@ -146,8 +146,8 @@ def translate_recursive(soup, level=1):
             translated_content += translated_child
             cost_tokens += child_cost_tokens
 
-    # 遍历结束，处理剩余的Buffer
-    if buffer:
+    # 遍历结束，处理剩余的Buffer，如果不只是空字符
+    if buffer.strip():
         if config["test"]:
             print(
                 f"遍历Level:{level}结束，缓冲区仍有Buffer\nBuffer Tokens：{buffer_tokens} \n翻译Buffer:\n{buffer}\n"
