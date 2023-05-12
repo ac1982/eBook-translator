@@ -1,3 +1,4 @@
 config.json
 *.epub
 __pycache__/
+.vscode/
