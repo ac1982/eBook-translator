@@ -41,6 +41,8 @@ if max_workers is None:
     max_workers = os.cpu_count()
 # 如果最大工作线程数未指定，则将其设置为可用的CPU核心数(os.cpu_count()返回CPU核心数)
 
+items_number = config.get('items_number',1)
+
 
 def num_tokens_from_string(string: str) -> int:
     """Returns the number of tokens in a text string."""
@@ -253,7 +255,7 @@ if __name__ == "__main__":
     for index, item in enumerate(items):
         if item.get_type() == ebooklib.ITEM_DOCUMENT:  # 检查项目类型是否为文档
             item_count += 1  # 项目计数加1
-            if config["test"] and item_count > max(1, total_items // 10):
+            if config["test"] and item_count > items_number:
                 break  # 如果项目数量超过指定阈值，则跳出循环
 
             original_content = item.get_content().decode("utf-8")  # 获取原始内容并解码为UTF-8格式
