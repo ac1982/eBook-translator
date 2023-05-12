@@ -45,6 +45,6 @@ def translate_content(content):
     # 提取翻译后的文本和使用的总 token 数
     translated_text = response.choices[0].message.content
     if config['test']:
-        print(f"这段文本翻译后的内容:\n {translated_text}")
+        print(f"这段文本翻译后的内容:\n{translated_text}\n")
     total_tokens = response.usage["total_tokens"]
     return translated_text, total_tokens
