@@ -255,7 +255,6 @@ if __name__ == "__main__":
         if item.get_type() == ebooklib.ITEM_DOCUMENT:  # 检查项目类型是否为文档
             item_count += 1  # 项目计数加1
             if config["test"] and item_count > max(1, total_items // 10):
-                # 在测试环境下，只加载1/10的项目
                 break  # 如果项目数量超过指定阈值，则跳出循环
 
             original_content = item.get_content().decode("utf-8")  # 获取原始内容并解码为UTF-8格式
@@ -268,6 +267,10 @@ if __name__ == "__main__":
         new_content, item_cost_tokens = future.result()  # 获取未来对象的结果（阻塞，直到结果可用）
         total_tokens += item_cost_tokens  # 增加令牌数量
         item_results[index] = (new_content, item_cost_tokens)  # 将处理结果存储到字典中
+
+    new_book.toc = book.toc  # 将原始电子书的目录复制到新的电子书中
+    new_book.spine = book.spine  # 将原始电子书的内容顺序复制到新的电子书中
+    new_book.guide = book.guide  # 将原始电子书的引导信息复制到新的电子书中
 
     for index, item in enumerate(items):
         if index in item_results:  # 检查处理结果中是否存在当前索引
@@ -286,15 +289,7 @@ if __name__ == "__main__":
         else:
             new_book.add_item(item)  # 如果处理结果中不存在当前索引，则将原始项目添加到新的电子书中
 
-    new_book.toc = book.toc  # 将原始电子书的目录复制到新的电子书中
-    new_book.spine = book.spine  # 将原始电子书的内容顺序复制到新的电子书中
-    new_book.guide = book.guide  # 将原始电子书的引导信息复制到新的电子书中
+    output_file = args.input_file.split(".")[0] + "_zh.epub"  # 根据输入文件名生成输出文件名
+    # 使用.split('.')获取文件名部分（不含扩展名），然后添加'_zh.epub'后缀
+    epub.write_epub(output_file, new_book)  # 将新的电子书
 
-    output_file = args.input_file.split(".")[0] + "_zh.epub"
-    # 根据输入文件名生成输出文件名，使用.split('.')获取文件名部分（不含扩展名），然后添加'_zh.epub'后缀
-    epub.write_epub(output_file, new_book)
-    # 将新的电子书写入输出文件，使用生成的输出文件名和新的电子书对象作为参数
-    usd_dollar = (total_tokens / 1000) * 0.002
-    # 计算令牌成本，将总令牌数量除以1000，然后乘以0.002（假设成本为每千个令牌的0.002 USD）
-    print(f"Cost tokens: {usd_dollar:.2f} USD")
-    # 打印令牌成本，保留两位小数，打印格式为"{usd_dollar:.2f} USD"
