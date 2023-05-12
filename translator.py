@@ -19,18 +19,17 @@ model_name = config["model"]
 
 if model_name == "gpt-4":
     MAX_TOKENS = 2400
+    THRESHOLD = 2000
 elif model_name == "gpt-3.5-turbo":
     MAX_TOKENS = 1200
+    THRESHOLD = 500
 else:
     print(f"未知模型: {model_name}")
     sys.exit(1)
-# 根据模型名称设置最大令牌数(MAX_TOKENS)。如果模型名称不在已知的模型列表中，打印错误消息并退出程序。
+# 根据模型名称设置MAX_TOKENS和THRESHOLD。如果模型名称不在已知的模型列表中，打印错误消息并退出程序。
 
 ENCODING_NAME = "cl100k_base"
 # 设置编码名称为"cl100k_base"
-
-THRESHOLD = MAX_TOKENS / 2
-# 设置阈值为最大令牌数的一半
 
 total_tokens = 0
 # 初始化总令牌数为0
@@ -292,4 +291,3 @@ if __name__ == "__main__":
     output_file = args.input_file.split(".")[0] + "_zh.epub"  # 根据输入文件名生成输出文件名
     # 使用.split('.')获取文件名部分（不含扩展名），然后添加'_zh.epub'后缀
     epub.write_epub(output_file, new_book)  # 将新的电子书
-
