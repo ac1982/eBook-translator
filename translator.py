@@ -24,9 +24,11 @@ model_name = config["model"]
 if model_name == "gpt-4":
     MAX_TOKENS = 2400
     THRESHOLD = 2000
+    UNIT_PRICE = 0.045
 elif model_name == "gpt-3.5-turbo":
     MAX_TOKENS = 1200
     THRESHOLD = 500
+    UNIT_PRICE = 0.002
 else:
     print(f"未知模型: {model_name}")
     sys.exit(1)
@@ -45,7 +47,7 @@ if max_workers is None:
     max_workers = os.cpu_count()
 # 如果最大工作线程数未指定，则将其设置为可用的CPU核心数(os.cpu_count()返回CPU核心数)
 
-items_number = config.get('items_number',1)
+items_number = config.get("items_number", 1)
 
 
 def num_tokens_from_string(string: str) -> int:
@@ -298,8 +300,8 @@ if __name__ == "__main__":
     # 使用.split('.')获取文件名部分（不含扩展名），然后添加'_zh.epub'后缀
     epub.write_epub(output_file, new_book)  # 将生成的EPUB电子书写入到指定的输出文件中
 
-    usd_dollar = (total_tokens / 1000) * 0.002
-    print(f"Cost tokens: {total_tokens}, may be ${usd_dollar:.4f}")
+    usd_dollar = (total_tokens / 1000) * UNIT_PRICE
+    print(f"Total tokens required: {total_tokens}.\nThe cost may amount to ${usd_dollar:.4f}\n")
 
     # Record the end time
     end_time = time.time()
