@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import ebooklib
 from ebooklib import epub
 from bs4 import BeautifulSoup
@@ -301,7 +303,9 @@ if __name__ == "__main__":
     epub.write_epub(output_file, new_book)  # 将生成的EPUB电子书写入到指定的输出文件中
 
     usd_dollar = (total_tokens / 1000) * UNIT_PRICE
-    print(f"Total tokens required: {total_tokens}.\nThe cost may amount to ${usd_dollar:.4f}\n")
+    print(
+        f"Total tokens required: {total_tokens}.\nThe cost may amount to ${usd_dollar:.4f}\n"
+    )
 
     # Record the end time
     end_time = time.time()
