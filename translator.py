@@ -8,6 +8,10 @@ from openai_handler import translate_content
 import sys
 import os
 import concurrent
+import time
+
+# Record the start time
+start_time = time.time()
 
 # 加载配置文件
 with open("config.json", "r") as f:
@@ -292,4 +296,20 @@ if __name__ == "__main__":
 
     output_file = args.input_file.split(".")[0] + "_zh.epub"  # 根据输入文件名生成输出文件名
     # 使用.split('.')获取文件名部分（不含扩展名），然后添加'_zh.epub'后缀
-    epub.write_epub(output_file, new_book)  # 将新的电子书
+    epub.write_epub(output_file, new_book)  # 将生成的EPUB电子书写入到指定的输出文件中
+
+    usd_dollar = (total_tokens / 1000) * 0.002
+    print(f"Cost tokens: {total_tokens}, may be ${usd_dollar:.4f}")
+
+    # Record the end time
+    end_time = time.time()
+
+    # Calculate the execution time in seconds
+    execution_time = end_time - start_time
+
+    # Calculate minutes and seconds
+    minutes = int(execution_time // 60)
+    seconds = int(execution_time % 60)
+
+    # Print the execution time in minutes and seconds
+    print("\nScript execution time:", minutes, " minutes and ", seconds, " seconds")
