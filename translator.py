@@ -277,10 +277,6 @@ if __name__ == "__main__":
         total_tokens += item_cost_tokens  # 增加令牌数量
         item_results[index] = (new_content, item_cost_tokens)  # 将处理结果存储到字典中
 
-    new_book.toc = book.toc  # 将原始电子书的目录复制到新的电子书中
-    new_book.spine = book.spine  # 将原始电子书的内容顺序复制到新的电子书中
-    new_book.guide = book.guide  # 将原始电子书的引导信息复制到新的电子书中
-
     for index, item in enumerate(items):
         if index in item_results:  # 检查处理结果中是否存在当前索引
             new_content, _ = item_results[index]  # 获取处理结果中的新内容
@@ -291,12 +287,16 @@ if __name__ == "__main__":
                 content=new_content,
             )  # 创建一个新的EpubItem对象
             new_book.add_item(new_item)  # 将新的项目添加到新的电子书中
-            # 更新目录
-            for toc_entry in new_book.toc:
-                if toc_entry.href == item.file_name:
-                    toc_entry.item = new_item  # 更新目录中的项目引用
+            # # 更新目录
+            # for toc_entry in new_book.toc:
+            #     if toc_entry.href == item.file_name:
+            #         toc_entry.item = new_item  # 更新目录中的项目引用
         else:
             new_book.add_item(item)  # 如果处理结果中不存在当前索引，则将原始项目添加到新的电子书中
+
+    new_book.toc = book.toc  # 将原始电子书的目录复制到新的电子书中
+    new_book.spine = book.spine  # 将原始电子书的内容顺序复制到新的电子书中
+    new_book.guide = book.guide  # 将原始电子书的引导信息复制到新的电子书中
 
     output_file = args.input_file.split(".")[0] + "_zh.epub"  # 根据输入文件名生成输出文件名
     # 使用.split('.')获取文件名部分（不含扩展名），然后添加'_zh.epub'后缀
