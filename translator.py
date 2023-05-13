@@ -252,55 +252,55 @@ if __name__ == "__main__":
             )
         # 将自定义元数据添加到新的电子书中
 
-    item_count = 0  # 初始化项目计数为0
-    items = list(book.get_items())  # 获取原始电子书中的所有项目，并将其转换为列表
-    total_items = len(items)  # 获取项目的总数
+    item_count = 0
+    items = list(book.get_items())
+    total_items = len(items)
 
-    item_results = {}  # 创建一个空的字典，用于存储处理结果
-    item_futures = []  # 创建一个空列表，用于存储任务的未来对象
-    total_tokens = 0  # 记录总的令牌数量
+    item_results = {}
+    item_futures = []
+    total_tokens = 0
 
     for index, item in enumerate(items):
-        if item.get_type() == ebooklib.ITEM_DOCUMENT:  # 检查项目类型是否为文档
+        if item.get_type() == ebooklib.ITEM_DOCUMENT:
             item_count += 1  # 项目计数加1
             if config["test"] and item_count > items_number:
-                break  # 如果项目数量超过指定阈值，则跳出循环
+                break
 
-            original_content = item.get_content().decode("utf-8")  # 获取原始内容并解码为UTF-8格式
-            future = executor.submit(
-                translate_item, original_content
-            )  # 提交翻译任务给执行器，获得一个未来对象
-            item_futures.append((index, item, future))  # 将索引、项目和未来对象添加到列表中
+            original_content = item.get_content().decode("utf-8")
+            future = executor.submit(translate_item, original_content)
+            item_futures.append((index, item, future))
 
     for index, item, future in item_futures:
-        new_content, item_cost_tokens = future.result()  # 获取未来对象的结果（阻塞，直到结果可用）
-        total_tokens += item_cost_tokens  # 增加令牌数量
-        item_results[index] = (new_content, item_cost_tokens)  # 将处理结果存储到字典中
+        new_content, item_cost_tokens = future.result()
+        total_tokens += item_cost_tokens
+        item_results[index] = (new_content, item_cost_tokens)
 
     for index, item in enumerate(items):
-        if index in item_results:  # 检查处理结果中是否存在当前索引
-            new_content, _ = item_results[index]  # 获取处理结果中的新内容
+        if index in item_results:
+            new_content, _ = item_results[index]
             new_item = epub.EpubItem(
                 uid=item.id,
                 file_name=item.file_name,
                 media_type=item.media_type,
                 content=new_content,
-            )  # 创建一个新的EpubItem对象
-            new_book.add_item(new_item)  # 将新的项目添加到新的电子书中
-            # # 更新目录
-            # for toc_entry in new_book.toc:
-            #     if toc_entry.href == item.file_name:
-            #         toc_entry.item = new_item  # 更新目录中的项目引用
+            )
+            new_book.add_item(new_item)
         else:
-            new_book.add_item(item)  # 如果处理结果中不存在当前索引，则将原始项目添加到新的电子书中
+            new_book.add_item(item)
 
-    new_book.toc = book.toc  # 将原始电子书的目录复制到新的电子书中
-    new_book.spine = book.spine  # 将原始电子书的内容顺序复制到新的电子书中
-    new_book.guide = book.guide  # 将原始电子书的引导信息复制到新的电子书中
+    new_book.toc = book.toc
+    new_book.spine = book.spine
+    new_book.guide = book.guide
 
-    output_file = args.input_file.split(".")[0] + "_zh.epub"  # 根据输入文件名生成输出文件名
-    # 使用.split('.')获取文件名部分（不含扩展名），然后添加'_zh.epub'后缀
-    epub.write_epub(output_file, new_book)  # 将生成的EPUB电子书写入到指定的输出文件中
+    # 更新目录条目的项目引用
+    for toc_entry in new_book.toc:
+        if hasattr(toc_entry, "href"):
+            toc_entry_item = new_book.get_item_with_href(toc_entry.href)
+            if toc_entry_item is not None:
+                toc_entry.item = toc_entry_item
+
+    output_file = args.input_file.split(".")[0] + "_zh.epub"
+    epub.write_epub(output_file, new_book)
 
     usd_dollar = (total_tokens / 1000) * UNIT_PRICE
     print(
