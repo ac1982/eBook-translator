@@ -288,9 +288,13 @@ if __name__ == "__main__":
         else:
             new_book.add_item(item)
 
-    new_book.toc = book.toc
-    new_book.spine = book.spine
-    new_book.guide = book.guide
+    try:
+        new_book.toc = book.toc
+        new_book.spine = book.spine
+        new_book.guide = book.guide
+    except Exception as e:
+        print(f"Error occurred while processing the source book: {e}\n检查源电子书是否正确。")
+        sys.exit(1)
 
     # 更新目录条目的项目引用
     for toc_entry in new_book.toc:
