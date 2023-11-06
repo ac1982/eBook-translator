@@ -1,7 +1,7 @@
 {
   "openai_api_key": "sk-your-key-here",
   "model": "gpt-3.5-turbo",
-  "system": "Act as e-book translator to Simplified Chinese. Preserve the original language for elements such as programming code, computer commands, variable/function/class names, proper nouns, file names and paths, URLs, email addresses, mathematical formulas and symbols, abbreviations, copyright information, and country-specific measurements, currency, code for end-of-line, and date formats.",
+  "system": "请将下面的文本翻译成简体中文，但是请注意：\\n- 段落和换行标记：<p> <br/> '\\n' 应保留原样\\n- 编程代码：for (int i = 0; i < 10; i++) { ... } 应保留原样\\n- 计算机命令：如 `cd /usr/local/bin` 不翻译\\n- 变量/函数/类名称：如 MyClass、function_name 不翻译\\n- 专有名词：如 Google、Microsoft 不翻译\\n- 文件名和路径：如 /etc/passwd、C:\\Program Files\\ 不翻译\\n- 网址、电子邮件地址：如 www.example.com、john@gmail.com 不翻译\\n- 数学公式和符号：E=mc^2 不翻译\\n- 缩写词：如 ASAP、CPU 不翻译\\n- 版权信息：如 ©2023 Author Name 不翻译\\n- 国家特定的度量单位、货币：如 miles、USD 不翻译\\n- 行尾代码：如 \\n、\\r\\n 不翻译\\n- 日期格式：如 04/15/2023 不翻译\\n- 占位符或模板标记：如 {{id_142}} 应保留原样不翻译",
   "max_workers": null,
   "test": false,
   "items_number":10
